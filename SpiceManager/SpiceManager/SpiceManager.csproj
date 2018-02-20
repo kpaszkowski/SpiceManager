@@ -59,14 +59,35 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Class\Product.cs" />
+    <Compile Include="Messages\ValidationMessages.cs" />
     <Compile Include="Other\Converter.cs" />
     <Compile Include="Other\Helper.cs" />
     <Compile Include="Other\RelayCommand.cs" />
     <Compile Include="Class\Spice.cs" />
     <Compile Include="Class\HistoryRecord.cs" />
+    <Compile Include="WindowView\ProductWindow\AddProductWindow.xaml.cs">
+      <DependentUpon>AddProductWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowView\SpiceWindow\AddSpiceWindow.xaml.cs">
+      <DependentUpon>AddSpiceWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="ViewModel\ViewModelMain.cs" />
-    <Page Include="Window\MainWindow.xaml">
+    <Compile Include="WindowView\SpiceWindow\EditSpiceWindow.xaml.cs">
+      <DependentUpon>EditSpiceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowView\WarehouseWindow\AddWarehouseSpiceWindow.xaml.cs">
+      <DependentUpon>AddWarehouseSpiceWindow.xaml</DependentUpon>
+    </Compile>
+    <Page Include="WindowView\ProductWindow\AddProductWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowView\SpiceWindow\AddSpiceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowView\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -74,10 +95,18 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Window\MainWindow.xaml.cs">
+    <Compile Include="WindowView\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="WindowView\SpiceWindow\EditSpiceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowView\WarehouseWindow\AddWarehouseSpiceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

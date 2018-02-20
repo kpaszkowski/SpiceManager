@@ -1,0 +1,28 @@
+﻿<Window x:Class="SpiceManager.WindowView.WarehouseWindow.AddWarehouseSpiceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SpiceManager.WindowView.WarehouseWindow"
+        xmlns:other="clr-namespace:SpiceManager.Other"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Title="Dodaj nową przyprawę do magazynu" Height="281" Width="218">
+    <Window.Resources>
+        <other:Converter x:Key="Converter"></other:Converter>
+    </Window.Resources>
+    <Grid>
+        <Label Margin="50,0,47,212" Content="Nazwa przyprawy" Height="30" VerticalAlignment="Bottom"/>
+        <TextBox x:Name="SpiceWarehouseName" Margin="10,0,10,193" Height="19" VerticalAlignment="Bottom"/>
+        <Label Margin="80,0,87,158" Content="Ilość" Height="30" VerticalAlignment="Bottom"/>
+        <TextBox x:Name="SpiceWarehouseAmount" Margin="10,0,10,139" Height="19" VerticalAlignment="Bottom"/>
+        <Label Margin="75,0,87,102" Content="Partia" Height="30" VerticalAlignment="Bottom"/>
+        <TextBox x:Name="SpiceWarehousePart" Margin="10,0,10,78" Height="19" VerticalAlignment="Bottom"/>
+        
+        <!--Buttons-->
+        <Button Content="Anuluj" Command="{Binding CloseWindowCommand}" Margin="135,0,26,16" RenderTransformOrigin="0.75,0.655" Height="26" VerticalAlignment="Bottom"/>
+        <Button IsDefault="True" Content="Dodaj" Command="{Binding AddSpiceToWarehouseInBaseCommand}" Margin="25,0,135,14" Height="28" VerticalAlignment="Bottom"/>
+
+    </Grid>
+</Window>

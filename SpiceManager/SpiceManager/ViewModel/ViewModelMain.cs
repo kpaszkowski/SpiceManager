@@ -27,6 +27,9 @@ namespace SpiceManager
         #region Command
 
         public RelayCommand AddNewProductCommand { get; set; }
+        public RelayCommand AddNewProductSpiceCommand { get; set; }
+        public RelayCommand RemoveProductSpiceCommand { get; set; }
+        public RelayCommand EditProductSpiceCommand { get; set; }
         public RelayCommand AddProductToBaseCommand { get; set; }
         public RelayCommand RemoveProductCommand { get; set; }
         public RelayCommand EditProductCommand { get; set; }
@@ -47,6 +50,7 @@ namespace SpiceManager
         public RelayCommand SaveCommand { get; set; }
         public RelayCommand CloseWindowCommand { get; set; }
         public RelayCommand ShowInfoCommand { get; set; }
+        public RelayCommand ClearValidationFieldCommand { get; set; }
         #endregion
 
         #region Selected Items
@@ -159,6 +163,9 @@ namespace SpiceManager
 
 
             AddNewProductCommand = new RelayCommand(AddNewProduct);
+            AddNewProductSpiceCommand = new RelayCommand(AddNewProductSpice);
+            RemoveProductSpiceCommand = new RelayCommand(RemoveProductSpice);
+            EditProductSpiceCommand = new RelayCommand(EditProductSpice);
             AddProductToBaseCommand = new RelayCommand(AddProductToBase);
             RemoveProductCommand = new RelayCommand(RemoveProduct);
             EditProductCommand = new RelayCommand(EditProduct);
@@ -179,6 +186,7 @@ namespace SpiceManager
             SaveCommand = new RelayCommand(Save);
             CloseWindowCommand = new RelayCommand(CloseWindow);
             ShowInfoCommand = new RelayCommand(ShowInfo);
+            ClearValidationFieldCommand = new RelayCommand(ClearValidationField);
 
             Test();
         }
@@ -219,11 +227,12 @@ namespace SpiceManager
             {
                 EditSpiceWindow currentWindow = App.Current.Windows.OfType<EditSpiceWindow>().SingleOrDefault(x => x.IsActive);
                 Spice currentSpice = (Spice)values[0];
-                foreach (var item in Spices.Where(x => x.Id == currentSpice.Id))
+                string currentSpiceName = currentSpice.Name;
+                foreach (var item in Spices.Where(x => x.Name == currentSpiceName))
                 {
                     item.Name = newSpiceName;
                 }
-                UpdateProductAndWarehouseGrid(currentSpice.Id, newSpiceName);
+                UpdateProductAndWarehouseGrid(currentSpiceName, newSpiceName);
                 SetErrorMessage(string.Empty);
                 currentWindow.Close();
             }
@@ -234,10 +243,33 @@ namespace SpiceManager
             if (!ValidateParams(obj))
             {
                 SetErrorMessage(ValidationMessages.NieWybranoElementuDoUsuniecia);
+                return;
             }
             var values = (object[])obj;
-            var spice = values[0];
-            Spices.Remove((Spice)spice);
+            Spice spice = (Spice)values[0];
+            string errorMessage = string.Empty;
+            if (!CanRemoveSpice(spice,ref errorMessage))
+            {
+                SetErrorMessage(errorMessage);
+                return;
+            }
+            Spices.Remove(spice);
+        }
+
+        private bool CanRemoveSpice(Spice spice, ref string message)
+        {
+            bool canRemove = true;
+            foreach (var item in Products.Where(x => x.SpiceList.Any(y => y.Name == spice.Name)))
+            {
+                message += string.Format(ValidationMessages.NieMoznaUsunacPrzyprawy+"\n", item.Name);
+                canRemove = false;
+            }
+            foreach (var item in Warehouse.Where(x=>x.Name==spice.Name))
+            {
+                message += ValidationMessages.NieMoznaUsunacPrzyprawyZnajdujeSieWMagazynie+"\n";
+                canRemove = false;
+            }
+            return canRemove;
         }
 
         private void AddNewSpice(object obj)
@@ -332,6 +364,23 @@ namespace SpiceManager
             Products.Remove((Product)product);
         }
 
+        private void EditProductSpice(object obj)
+        {
+            
+        }
+
+        private void RemoveProductSpice(object obj)
+        {
+            Product product = (Product)SelectedProduct;
+            product.SpiceList.Remove((Spice)obj);
+            mainWindow.ProductSpiceGrid.Items.Refresh();
+        }
+
+        private void AddNewProductSpice(object obj)
+        {
+            
+        }
+
         #endregion
 
         #region Warehouse
@@ -424,15 +473,20 @@ namespace SpiceManager
 
         }
 
-        public void UpdateProductAndWarehouseGrid(int id, string newSpiceName)
+        private void ClearValidationField(object obj)
         {
-            foreach (var item in Warehouse.Where(x=>x.Id==id))
+            SetErrorMessage(string.Empty);
+        }
+
+        public void UpdateProductAndWarehouseGrid(string currentSpiceName, string newSpiceName)
+        {
+            foreach (var item in Warehouse.Where(x=>x.Name==currentSpiceName))
             {
                 item.Name = newSpiceName;
             }
             foreach (var item in Products)
             {
-                foreach (var spice in item.SpiceList.Where(x=>x.Id==id))
+                foreach (var spice in item.SpiceList.Where(x=>x.Name==currentSpiceName))
                 {
                     spice.Name = newSpiceName;
                 }
@@ -471,7 +525,14 @@ namespace SpiceManager
 
         private void SetErrorMessage(string message)
         {
-            mainWindow.ErrorTexBlock.Text = message;
+            if (string.IsNullOrEmpty(message))
+            {
+                mainWindow.ErrorTexBlock.Text = "";
+            }
+            else
+            {
+                mainWindow.ErrorTexBlock.Text = message;
+            }
         }
 
         #endregion

@@ -7,7 +7,7 @@
         xmlns:other="clr-namespace:SpiceManager.Other"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
-        Title="SpiceManager" MinHeight="350" MinWidth="525"
+        Title="SpiceManager" MinHeight="370" MinWidth="525"
         DataContext="{DynamicResource ViewModelMain}"
         >
     <Window.Resources>
@@ -134,6 +134,33 @@
                                     </Button.CommandParameter>
                                 </Button>
                             </Grid>
+                            <Label HorizontalAlignment="Center">Przyprawy w Produkcie</Label>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="33*"/>
+                                    <ColumnDefinition Width="33*"/>
+                                    <ColumnDefinition Width="33*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddNewProductCommand}">
+                                    <iconPacks:PackIconModern Kind="Add"/>
+                                </Button>
+                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding EditProductCommand}">
+                                    <iconPacks:PackIconModern Kind="Edit" />
+                                    <!--<Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource Converter}">
+                                <Binding Path="" ElementName=""/>
+                            </MultiBinding>
+                        </Button.CommandParameter>-->
+                                </Button>
+                                <Button Grid.Column="2" Margin="10" Background="White" BorderThickness="0" Command="{Binding RemoveProductCommand}">
+                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
+                                    <Button.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource Converter}">
+                                            <Binding Path="SelectedProduct"/>
+                                        </MultiBinding>
+                                    </Button.CommandParameter>
+                                </Button>
+                            </Grid>
                         </StackPanel>
                     </Border>
                     
@@ -171,6 +198,31 @@
                             </DataGrid>
                             <DataGrid x:Name="ProductSpiceGrid" IsReadOnly="True" ItemsSource="{Binding SelectedProduct.SpiceList}" SelectedItem="{Binding SelectedSpiceProduct}" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.AddNewProductSpiceCommand}" CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconModern Kind="Add" />
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="10*"/>
+                                                        <ColumnDefinition Width="10*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.EditProductSpiceCommand}" CommandParameter="{Binding}">
+                                                        <iconPacks:PackIconModern Kind="Edit" />
+                                                    </Button>
+                                                    <Button Grid.Column="1" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.RemoveProductSpiceCommand}" CommandParameter="{Binding}">
+                                                        <iconPacks:PackIconOcticons Kind="Trashcan"/>
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="Numer" Binding="{Binding Id}" />
                                     <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" />
                                     <DataGridTextColumn Header="Ilość" Binding="{Binding Amount}" />
@@ -203,7 +255,9 @@
         <Border BorderBrush="Black" BorderThickness="2" Grid.Row="1" Grid.Column="1" CornerRadius="8,8,8,8">
             <Grid Margin="1" >
                 <DockPanel>
-                    <iconPacks:PackIconModern Kind="WarningCircle" Height="auto" Width="auto"/>
+                    <Button Background="White" BorderThickness="0" Command="{Binding ClearValidationFieldCommand}">
+                        <iconPacks:PackIconModern Kind="WarningCircle" Height="auto" Width="auto"/>
+                    </Button>
                     <ScrollViewer Margin="10,0,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                         <TextBlock Foreground="Red" x:Name="ErrorTexBlock" VerticalAlignment="Center"></TextBlock>
                     </ScrollViewer>

@@ -13,7 +13,9 @@ namespace SpiceManager.Messages
         public const string ZleParametry = "Podano niewłaśniwe dane.";
         public const string NazwaPrzyprawyNieJestUnikalna = "Istnieje już taka przyprawa.";
         public const string NazwaProduktuNieJestUnikalna = "Istnieje już taki produkt.";
-        public const string BrakPrzyprawy = "Brakuje {0} gram przyprawy \"{1}\".\nNajpierw dodaj wymaganą ilość do magazynu.";
+        public const string BrakPrzyprawy = "Brakuje {0} gram przyprawy \"{1}\".\n\tNajpierw dodaj wymaganą ilość do magazynu.";
         public const string NiePodanoNazwy= "Nie podano nazwy.";
+        public const string NieMoznaUsunacPrzyprawy = "Nie można usunąć przyprawy.\n\tNajpierw zmodyfikuj skład produktu \"{0}\".";
+        public const string NieMoznaUsunacPrzyprawyZnajdujeSieWMagazynie = "Nie można usunąć przyprawy.\n\tNajpierw usuń ją z magazynu.";
     }
 }

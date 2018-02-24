@@ -8,18 +8,20 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Title="Dodaj nową przyprawę do magazynu" Height="281" Width="218">
+        Title="Dodaj nową przyprawę do magazynu" Height="281" Width="233">
     <Window.Resources>
         <other:Converter x:Key="Converter"></other:Converter>
     </Window.Resources>
     <Grid>
-        <Label Margin="50,0,47,212" Content="Nazwa przyprawy" Height="30" VerticalAlignment="Bottom"/>
-        <TextBox x:Name="SpiceWarehouseName" Margin="10,0,10,193" Height="19" VerticalAlignment="Bottom"/>
-        <Label Margin="80,0,87,158" Content="Ilość" Height="30" VerticalAlignment="Bottom"/>
-        <TextBox x:Name="SpiceWarehouseAmount" Margin="10,0,10,139" Height="19" VerticalAlignment="Bottom"/>
-        <Label Margin="75,0,87,102" Content="Partia" Height="30" VerticalAlignment="Bottom"/>
-        <TextBox x:Name="SpiceWarehousePart" Margin="10,0,10,78" Height="19" VerticalAlignment="Bottom"/>
-        
+        <StackPanel>
+            <Label HorizontalAlignment="Center" Content="Nazwa przyprawy" Height="30" VerticalAlignment="Bottom"/>
+            <ComboBox HorizontalAlignment="Center" x:Name="SpiceWarehouseName" ItemsSource="{Binding Spices}" DisplayMemberPath="Name" SelectedValuePath="Name" SelectedValue="{Binding SelectedSpice}" Margin="40,0,32,0" Width="140"></ComboBox>
+            <Label HorizontalAlignment="Center" Content="Ilość" Height="30" VerticalAlignment="Bottom"/>
+            <TextBox HorizontalAlignment="Center" x:Name="SpiceWarehouseAmount" Margin="40,5,32,5" Height="20" Width="140" VerticalAlignment="Bottom"/>
+            <Label HorizontalAlignment="Center" Content="Partia" Height="30" VerticalAlignment="Bottom"/>
+            <TextBox HorizontalAlignment="Center" x:Name="SpiceWarehousePart" Margin="40,5,32,5" Height="20" Width="140" VerticalAlignment="Bottom"/>
+        </StackPanel>
+
         <!--Buttons-->
         <Button Content="Anuluj" Command="{Binding CloseWindowCommand}" Margin="135,0,26,16" RenderTransformOrigin="0.75,0.655" Height="26" VerticalAlignment="Bottom"/>
         <Button IsDefault="True" Content="Dodaj" Command="{Binding AddSpiceToWarehouseInBaseCommand}" Margin="25,0,135,14" Height="28" VerticalAlignment="Bottom"/>

@@ -1,4 +1,5 @@
-﻿using SpiceManager.Messages;
+﻿using Newtonsoft.Json;
+using SpiceManager.Messages;
 using SpiceManager.Other;
 using SpiceManager.WindowView.ProductWindow;
 using SpiceManager.WindowView.SpiceWindow;
@@ -6,6 +7,7 @@ using SpiceManager.WindowView.WarehouseWindow;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,8 +30,8 @@ namespace SpiceManager
 
         public RelayCommand AddNewProductCommand { get; set; }
         public RelayCommand AddNewProductSpiceCommand { get; set; }
+        public RelayCommand AddNewProductSpiceToBaseCommand { get; set; }
         public RelayCommand RemoveProductSpiceCommand { get; set; }
-        public RelayCommand EditProductSpiceCommand { get; set; }
         public RelayCommand AddProductToBaseCommand { get; set; }
         public RelayCommand RemoveProductCommand { get; set; }
         public RelayCommand EditProductCommand { get; set; }
@@ -163,9 +165,11 @@ namespace SpiceManager
 
 
             AddNewProductCommand = new RelayCommand(AddNewProduct);
+
             AddNewProductSpiceCommand = new RelayCommand(AddNewProductSpice);
+            AddNewProductSpiceToBaseCommand = new RelayCommand(AddNewProductSpiceToBase); 
             RemoveProductSpiceCommand = new RelayCommand(RemoveProductSpice);
-            EditProductSpiceCommand = new RelayCommand(EditProductSpice);
+
             AddProductToBaseCommand = new RelayCommand(AddProductToBase);
             RemoveProductCommand = new RelayCommand(RemoveProduct);
             EditProductCommand = new RelayCommand(EditProduct);
@@ -188,7 +192,7 @@ namespace SpiceManager
             ShowInfoCommand = new RelayCommand(ShowInfo);
             ClearValidationFieldCommand = new RelayCommand(ClearValidationField);
 
-            Test();
+            Load();
         }
 
         #region Methods
@@ -364,11 +368,6 @@ namespace SpiceManager
             Products.Remove((Product)product);
         }
 
-        private void EditProductSpice(object obj)
-        {
-            
-        }
-
         private void RemoveProductSpice(object obj)
         {
             Product product = (Product)SelectedProduct;
@@ -378,7 +377,56 @@ namespace SpiceManager
 
         private void AddNewProductSpice(object obj)
         {
-            
+            if (SelectedProduct==null)
+            {
+                SetErrorMessage(ValidationMessages.NieWybranoProduktu);
+                return;
+            }
+            AddProductSpiceWindow addProductSpiceWindow = new AddProductSpiceWindow();
+            addProductSpiceWindow.DataContext = this;
+            addProductSpiceWindow.Owner = mainWindow;
+            addProductSpiceWindow.ShowDialog();
+        }
+
+        private void AddNewProductSpiceToBase(object obj)
+        {
+            var values = (object[])obj;
+            AddProductSpiceWindow currentWindow = App.Current.Windows.OfType<AddProductSpiceWindow>().SingleOrDefault(x => x.IsActive);
+            double n;
+            bool isNumeric = double.TryParse(currentWindow.SpiceProductAmount.Text.ToString(), out n);
+            if (!isNumeric)
+            {
+                SetErrorMessage(ValidationMessages.ZleParametry);
+                return;
+            }
+            double spiceAmount = Double.Parse(currentWindow.SpiceProductAmount.Text.ToString());
+            Product product = (Product)SelectedProduct;
+            if (SelectedSpiceProduct == null)
+            {
+                SetErrorMessage(ValidationMessages.NieWybranoPrzyprawy);
+                return;
+            }
+
+            Spice spice = (Spice)values[0];
+            string spiceName = spice.Name;
+            foreach (var item in product.SpiceList.Where(x=>x.Name.ToLower()==spice.Name.ToLower()))
+            {
+                SetErrorMessage(ValidationMessages.PrzyprawaJużIstenieWPrzepisie);
+                return;
+            }
+            Spice spicetoAdd = new Spice
+            {
+                Id = Helper.FindMaxValue(product.SpiceList, x => x.Id) + 1,
+                Name = spiceName,
+                Amount = spiceAmount
+            };
+            string currentProductName = product.Name;
+            foreach (var item in Products.Where(x => x.Name.ToLower() == currentProductName.ToLower()))
+            {
+                item.SpiceList.Add(spicetoAdd);
+            }
+            currentWindow.Close();
+            mainWindow.ProductSpiceGrid.Items.Refresh();
         }
 
         #endregion
@@ -411,21 +459,31 @@ namespace SpiceManager
 
         private void AddSpiceToWarehouseInBase(object obj)
         {
-
             AddWarehouseSpiceWindow currentWindow = App.Current.Windows.OfType<AddWarehouseSpiceWindow>().SingleOrDefault(x => x.IsActive);
+            double n;
+            bool isNumeric = double.TryParse(currentWindow.SpiceWarehouseAmount.Text.ToString(), out n);
+            if (!isNumeric)
+            {
+                SetErrorMessage(ValidationMessages.ZleParametry);
+                return;
+            }
             string spiceName = currentWindow.SpiceWarehouseName.Text.ToString();
             double spiceAmount = Double.Parse(currentWindow.SpiceWarehouseAmount.Text.ToString());
             string spicePart = currentWindow.SpiceWarehousePart.Text.ToString();
-
-            bool isSpiceNameUnique = (!Warehouse.Any(x => x.Name.ToLower() == spiceName.ToLower()));
+            if (string.IsNullOrEmpty(spiceName) || string.IsNullOrEmpty(spicePart)) 
+            {
+                SetErrorMessage(ValidationMessages.ZleParametry);
+                return;
+            }
+            bool isSpicePartUnique = (!Warehouse.Any(x => x.Part.ToLower() == spicePart.ToLower()));
 
             if (string.IsNullOrEmpty(spiceName))
             {
                 SetErrorMessage(ValidationMessages.NiePodanoNazwy);
             }
-            else if (!isSpiceNameUnique)
+            else if (!isSpicePartUnique)
             {
-                SetErrorMessage(ValidationMessages.NazwaPrzyprawyNieJestUnikalna);
+                SetErrorMessage(ValidationMessages.NazwaPartiiNieJestUnikalna);
             }
             else
             {
@@ -458,7 +516,67 @@ namespace SpiceManager
 
         private void Save(object obj)
         {
-            throw new NotImplementedException();
+            //produkty
+            string json = JsonConvert.SerializeObject(Products);
+            string fileName = "products.txt";
+            string path = Path.Combine(Environment.CurrentDirectory, fileName);
+            System.IO.File.WriteAllText(path, json);
+
+            //przyprawy
+            json = JsonConvert.SerializeObject(Spices);
+            fileName = "spices.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            System.IO.File.WriteAllText(path, json);
+
+            //magazyn
+            json = JsonConvert.SerializeObject(Warehouse);
+            fileName = "warehouse.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            System.IO.File.WriteAllText(path, json);
+
+            //hisotria
+            json = JsonConvert.SerializeObject(History);
+            fileName = "history.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            System.IO.File.WriteAllText(path, json);
+
+        }
+
+        private void Load()
+        {
+            string fileName = "products.txt";
+            string path = Path.Combine(Environment.CurrentDirectory, fileName);
+            string json = System.IO.File.ReadAllText(path);
+            var resultProduct = JsonConvert.DeserializeObject<ObservableCollection<Product>>(json);
+            if (resultProduct != null)
+            {
+                Products = new ObservableCollection<Product>(resultProduct);
+            }
+            fileName = "spices.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            json = System.IO.File.ReadAllText(path);
+            var resultSpice = JsonConvert.DeserializeObject<ObservableCollection<Spice>>(json);
+            if (resultSpice != null)
+            {
+                Spices = new ObservableCollection<Spice>(resultSpice);
+            }
+            fileName = "warehouse.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            json = System.IO.File.ReadAllText(path);
+            var resultWarehouse = JsonConvert.DeserializeObject<ObservableCollection<Spice>>(json);
+            if (resultWarehouse != null)
+            {
+                Warehouse = new ObservableCollection<Spice>(resultWarehouse);
+            }
+            fileName = "history.txt";
+            path = Path.Combine(Environment.CurrentDirectory, fileName);
+            json = System.IO.File.ReadAllText(path);
+            var resultHistory = JsonConvert.DeserializeObject<ObservableCollection<HistoryRecord>>(json);
+            if (resultHistory != null)
+            {
+                History = new ObservableCollection<HistoryRecord>(resultHistory);
+            }
+
         }
 
         private void CloseWindow(object obj)
@@ -480,13 +598,13 @@ namespace SpiceManager
 
         public void UpdateProductAndWarehouseGrid(string currentSpiceName, string newSpiceName)
         {
-            foreach (var item in Warehouse.Where(x=>x.Name==currentSpiceName))
+            foreach (var item in Warehouse.Where(x=>x.Name.ToLower()==currentSpiceName.ToLower()))
             {
                 item.Name = newSpiceName;
             }
             foreach (var item in Products)
             {
-                foreach (var spice in item.SpiceList.Where(x=>x.Name==currentSpiceName))
+                foreach (var spice in item.SpiceList.Where(x=>x.Name.ToLower()==currentSpiceName.ToLower()))
                 {
                     spice.Name = newSpiceName;
                 }
@@ -538,16 +656,5 @@ namespace SpiceManager
         #endregion
 
         #endregion
-
-        private void Test()
-        {
-            Spice s = new Spice { Id = 1, Name = "Oregano"};
-            Spice s2 = new Spice { Id = 1, Name = "Oregano", Amount = 10, Part = "D2aF" };
-            Product p = new Product { Id = 6, Name = "Krakowska", SpiceList = new List<Spice> {s} };
-            History.Add(new HistoryRecord { Id = 9, Date = DateTime.Now, SpiceList = new List<Spice> { s}, Text = "sabfds" });
-            Spices.Add(s);
-            Products.Add(p);
-            Warehouse.Add(s2);
-        }
     }
 }

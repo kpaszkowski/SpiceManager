@@ -6,6 +6,10 @@ namespace SpiceManager
 {
     public class Product : INotifyPropertyChanged
     {
+        public Product()
+        {
+            _SpiceList = new List<Spice>();
+        }
         int _Id;
         public int Id
         {

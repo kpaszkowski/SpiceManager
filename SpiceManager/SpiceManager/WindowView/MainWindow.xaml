@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpiceManager"
         xmlns:other="clr-namespace:SpiceManager.Other"
+        xmlns:class="clr-namespace:SpiceManager.Class"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="SpiceManager" MinHeight="370" MinWidth="525"
@@ -28,7 +29,7 @@
         <Grid Grid.Row="0" Grid.Column="0" Margin="20px">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <Button Margin="15" Background="White" BorderThickness="0" Command="{Binding StartProductionCommand}">
+                    <Button Margin="15" Background="White" BorderThickness="0" Command="{Binding OpenWindowProductionCommand}">
                         <iconPacks:PackIconSimpleIcons Kind="ProductHunt" Width="64" Height="64" />
                     </Button>
                     <Grid>
@@ -52,24 +53,8 @@
                                     <ColumnDefinition Width="33*"/>
                                     <ColumnDefinition Width="33*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddSpiceToWarehouseCommand}">
+                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddSpiceToWarehouseCommand}">
                                     <iconPacks:PackIconModern Kind="Add"/>
-                                </Button>
-                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding EditSpiceInWarehouseCommand}">
-                                    <iconPacks:PackIconModern Kind="Edit" />
-                                    <!--<Button.CommandParameter>
-                            <MultiBinding Converter="{StaticResource Converter}">
-                                <Binding Path="" ElementName=""/>
-                            </MultiBinding>
-                        </Button.CommandParameter>-->
-                                </Button>
-                                <Button Grid.Column="2" Margin="10" Background="White" BorderThickness="0" Command="{Binding RemoveSpiceFromWarehouseCommand}">
-                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
-                                    <Button.CommandParameter>
-                                        <MultiBinding Converter="{StaticResource Converter}">
-                                            <Binding Path="SelectedWarehouseSpice"/>
-                                        </MultiBinding>
-                                    </Button.CommandParameter>
                                 </Button>
                             </Grid>
                         </StackPanel>
@@ -83,24 +68,8 @@
                                     <ColumnDefinition Width="33*"/>
                                     <ColumnDefinition Width="33*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddNewSpiceCommand}">
+                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddNewSpiceCommand}">
                                     <iconPacks:PackIconModern Kind="Add"/>
-                                </Button>
-                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding EditSpiceCommand}">
-                                    <iconPacks:PackIconModern Kind="Edit" />
-                                    <Button.CommandParameter>
-                                        <MultiBinding Converter="{StaticResource Converter}">
-                                            <Binding Path="SelectedSpice"/>
-                                        </MultiBinding>
-                                    </Button.CommandParameter>
-                                </Button>
-                                <Button Grid.Column="2" Margin="10" Background="White" BorderThickness="0" Command="{Binding RemoveSpiceCommand}">
-                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
-                                    <Button.CommandParameter>
-                                        <MultiBinding Converter="{StaticResource Converter}">
-                                            <Binding Path="SelectedSpice"/>
-                                        </MultiBinding> 
-                                    </Button.CommandParameter>
                                 </Button>
                             </Grid>
                         </StackPanel>
@@ -114,24 +83,8 @@
                                     <ColumnDefinition Width="33*"/>
                                     <ColumnDefinition Width="33*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddNewProductCommand}">
+                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding AddNewProductCommand}">
                                     <iconPacks:PackIconModern Kind="Add"/>
-                                </Button>
-                                <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding EditProductCommand}">
-                                    <iconPacks:PackIconModern Kind="Edit" />
-                                    <!--<Button.CommandParameter>
-                            <MultiBinding Converter="{StaticResource Converter}">
-                                <Binding Path="" ElementName=""/>
-                            </MultiBinding>
-                        </Button.CommandParameter>-->
-                                </Button>
-                                <Button Grid.Column="2" Margin="10" Background="White" BorderThickness="0" Command="{Binding RemoveProductCommand}">
-                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
-                                    <Button.CommandParameter>
-                                        <MultiBinding Converter="{StaticResource Converter}">
-                                            <Binding Path="SelectedProduct"/>
-                                        </MultiBinding>
-                                    </Button.CommandParameter>
                                 </Button>
                             </Grid>
                         </StackPanel>
@@ -154,6 +107,29 @@
                     <TabItem Header="Magazyn">
                         <DataGrid x:Name="WarehouseGrid" IsReadOnly="True" ItemsSource="{Binding Warehouse}" SelectedItem="{Binding SelectedWarehouseSpice}" AutoGenerateColumns="False">
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="25*"/>
+                                                    <ColumnDefinition Width="25*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="0" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.EditSpiceInWarehouseCommand}" CommandParameter="{Binding SelectedWarehouseSpice}">
+                                                    <iconPacks:PackIconModern Kind="Edit" />
+                                                </Button>
+                                                <Button Grid.Column="1" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.RemoveSpiceFromWarehouseCommand}" CommandParameter="{Binding SelectedWarehouseSpice}">
+                                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
+                                                    <!--<Button.CommandParameter>
+                                                        <MultiBinding Converter="{StaticResource Converter}">
+                                                            <Binding Path="SelectedWarehouseSpice"/>
+                                                        </MultiBinding>
+                                                    </Button.CommandParameter>-->
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Nrumer" Binding="{Binding Id}" />
                                 <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" />
                                 <DataGridTextColumn Header="Ilość na stanie" Binding="{Binding Amount}" />
@@ -163,10 +139,27 @@
                     </TabItem>
                     <TabItem Header="Produkty">
                         <StackPanel Orientation="Horizontal">
-                            <DataGrid x:Name="ProductGrid" IsReadOnly="True" ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}" AutoGenerateColumns="False">
+                            <DataGrid x:Name="ProductGrid" CanUserAddRows="False" CanUserDeleteRows="False" ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Numer" Binding="{Binding Id}" />
-                                    <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" />
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.RemoveProductCommand}" CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Numer" Binding="{Binding Id}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Nazwa" IsReadOnly="False">
+                                        <DataGridTextColumn.Binding>
+                                            <Binding Path="Name">
+                                                <Binding.ValidationRules>
+                                                    <class:UniqueValidationRule/>
+                                                </Binding.ValidationRules>
+                                            </Binding>
+                                        </DataGridTextColumn.Binding>
+                                    </DataGridTextColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                             <DataGrid CanUserAddRows="False" CanUserDeleteRows="False" x:Name="ProductSpiceGrid" ItemsSource="{Binding SelectedProduct.SpiceList}" SelectedItem="{Binding SelectedSpiceProduct}" AutoGenerateColumns="False">
@@ -197,19 +190,47 @@
                     <TabItem Header="Przyprawy">
                         <DataGrid x:Name="SpiceGrid" IsReadOnly="True" ItemsSource="{Binding Spices}" SelectedItem="{Binding SelectedSpice}" AutoGenerateColumns="False">
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="25*"/>
+                                                    <ColumnDefinition Width="25*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="0" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.EditSpiceCommand}" CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconModern Kind="Edit"/>
+                                                </Button>
+                                                <Button Grid.Column="1" Background="White" BorderThickness="0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}, Path=DataContext.RemoveSpiceCommand}" CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconOcticons Kind="Trashcan"/>
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Nrumer" Binding="{Binding Id}" />
                                 <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
                     <TabItem Header="Historia">
-                        <DataGrid x:Name="HistoryGrid" IsReadOnly="True" ItemsSource="{Binding History}" AutoGenerateColumns="False">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Nrumer" Binding="{Binding Id}" />
-                                <DataGridTextColumn Header="Opis" Binding="{Binding Text}" />
-                                <DataGridTextColumn Header="Data produkcji" Binding="{Binding Date}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <StackPanel Orientation="Horizontal">
+                            <DataGrid x:Name="HistoryGrid" IsReadOnly="True" ItemsSource="{Binding History}" AutoGenerateColumns="False" SelectedValue="{Binding SelectedHistoryRecord}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Nrumer" Binding="{Binding Id}" />
+                                    <DataGridTextColumn Header="Opis" Binding="{Binding Text}" />
+                                    <DataGridTextColumn Header="Data produkcji" Binding="{Binding Date}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <DataGrid x:Name="HistoryGridSpiceList" IsReadOnly="True" ItemsSource="{Binding SelectedHistoryRecord.SpiceList}" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Nrumer" Binding="{Binding Id}" />
+                                    <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" />
+                                    <DataGridTextColumn Header="Wykorzystana ilość" Binding="{Binding Amount}" />
+                                    <DataGridTextColumn Header="Numer partii" Binding="{Binding Part}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
                     </TabItem>
                 </TabControl>
             </StackPanel>

@@ -6,6 +6,10 @@ namespace SpiceManager
 {
     public class HistoryRecord : INotifyPropertyChanged
     {
+        public HistoryRecord()
+        {
+            this.SpiceList = new List<Spice>();
+        }
         int _Id;
         public int Id
         {

@@ -48,8 +48,11 @@ namespace SpiceManager
             {
                 if (_Amount != value)
                 {
-                    _Amount = value;
-                    RaisePropertyChanged("Amount");
+                    if (value>=0)
+                    {
+                        _Amount = value;
+                        RaisePropertyChanged("Amount");
+                    }
                 }
             }
         }

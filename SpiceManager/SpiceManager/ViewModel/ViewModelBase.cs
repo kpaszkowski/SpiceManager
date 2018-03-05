@@ -9,7 +9,7 @@ using System.Windows.Threading;
 
 namespace SpiceManager
 {
-    class ViewModelBase : INotifyPropertyChanged
+    public class ViewModelBase : INotifyPropertyChanged
     {
         internal void RaisePropertyChanged(string prop)
         {

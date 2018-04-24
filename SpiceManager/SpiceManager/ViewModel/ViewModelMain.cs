@@ -39,6 +39,7 @@ namespace SpiceManager
         public RelayCommand AddProductToBaseCommand { get; set; }
         public RelayCommand RemoveProductCommand { get; set; }
         public RelayCommand EditProductCommand { get; set; }
+        public RelayCommand EditProductInBaseCommand { get; set; }
 
         public RelayCommand AddNewSpiceCommand { get; set; }
         public RelayCommand AddSpiceToBaseCommand { get; set; }
@@ -58,12 +59,12 @@ namespace SpiceManager
         public RelayCommand ExportToExcelEndCommand { get; set; }
         public RelayCommand SaveCommand { get; set; }
         public RelayCommand CloseWindowCommand { get; set; }
-        public RelayCommand ShowInfoCommand { get; set; }
+        public RelayCommand RemoveFromHistoryCommand { get; set; }
         public RelayCommand ClearValidationFieldCommand { get; set; }
+        public RelayCommand ClearWarehouseCommand { get; set; }
+        public RelayCommand ClearHistoryCommand { get; set; }
 
         #region RadioButton
-
-        public RelayCommand lolCommand { get; set; }
 
         #endregion
 
@@ -104,6 +105,24 @@ namespace SpiceManager
             {
                 _DateFrom = value;
                 RaisePropertyChanged("DateFrom");
+            }
+        }
+
+        private Nullable<DateTime> _DateTo = null;
+        public Nullable<DateTime> DateTo
+        {
+            get
+            {
+                if (_DateTo == null)
+                {
+                    _DateTo = DateTime.Today;
+                }
+                return _DateTo;
+            }
+            set
+            {
+                _DateTo = value;
+                RaisePropertyChanged("DateTo");
             }
         }
 
@@ -192,6 +211,23 @@ namespace SpiceManager
             }
         }
 
+        object _SelectedWarehouseSpiceEditWindow;
+        public object SelectedWarehouseSpiceEditWindow
+        {
+            get
+            {
+                return _SelectedWarehouseSpiceEditWindow;
+            }
+            set
+            {
+                if (_SelectedWarehouseSpiceEditWindow != value)
+                {
+                    _SelectedWarehouseSpiceEditWindow = value;
+                    RaisePropertyChanged("SelectedWarehouseSpiceEditWindow");
+                }
+            }
+        }
+
         #endregion
 
         #region Global Variables
@@ -222,6 +258,7 @@ namespace SpiceManager
             AddProductToBaseCommand = new RelayCommand(AddProductToBase);
             RemoveProductCommand = new RelayCommand(RemoveProduct);
             EditProductCommand = new RelayCommand(EditProduct);
+            EditProductInBaseCommand = new RelayCommand(EditProductInBase);
 
             AddNewSpiceCommand = new RelayCommand(AddNewSpice);
             AddSpiceToBaseCommand = new RelayCommand(AddSpiceToBase);
@@ -241,22 +278,11 @@ namespace SpiceManager
             ExportToExcelEndCommand = new RelayCommand(ExportToExcelEnd);
             SaveCommand = new RelayCommand(Save);
             CloseWindowCommand = new RelayCommand(CloseWindow);
-            ShowInfoCommand = new RelayCommand(ShowInfo);
+            RemoveFromHistoryCommand = new RelayCommand(RemoveFromHistory);
             ClearValidationFieldCommand = new RelayCommand(ClearValidationField);
-
-            #region RadioButton
-
-            lolCommand = new RelayCommand(lol);
-
-            #endregion
-
-
+            ClearWarehouseCommand = new RelayCommand(ClearWarehouse);
+            ClearHistoryCommand = new RelayCommand(ClearHistory);
             Load();
-        }
-
-        private void lol(object obj)
-        {
-            throw new NotImplementedException();
         }
 
         #region Methods
@@ -418,8 +444,38 @@ namespace SpiceManager
 
         private void EditProduct(object obj)
         {
-            throw new NotImplementedException();
-            SetConfirmMessages(OtherMessages.PomyslnieEdytowanoElement);
+            EditProductWindow editProductWindow = new EditProductWindow();
+            editProductWindow.DataContext = this;
+            editProductWindow.Owner = mainWindow;
+            editProductWindow.ShowDialog();
+        }
+
+        private void EditProductInBase(object obj)
+        {
+            var values = (object[])obj;
+            string newProductName = values[1].ToString();
+            bool isProductNameUnique = (!Products.Any(x => x.Name.ToLower() == newProductName.ToLower()));
+            if (string.IsNullOrEmpty(newProductName))
+            {
+                SetErrorMessage(ValidationMessages.NiePodanoNazwy);
+            }
+            else if (!isProductNameUnique)
+            {
+                SetErrorMessage(ValidationMessages.NazwaProduktuNieJestUnikalna);
+            }
+            else
+            {
+                EditProductWindow currentWindow = App.Current.Windows.OfType<EditProductWindow>().SingleOrDefault(x => x.IsActive);
+                Product currentProduct = (Product)values[0];
+                string currentProductName = currentProduct.Name;
+                foreach (var item in Products.Where(x => x.Name == currentProductName))
+                {
+                    item.Name = newProductName;
+                }
+                //UpdateProductAndWarehouseGrid(currentProductName, newProductName);
+                SetConfirmMessages(OtherMessages.PomyslnieEdytowanoElement);
+                currentWindow.Close();
+            }
         }
 
         private void RemoveProduct(object obj)
@@ -477,7 +533,7 @@ namespace SpiceManager
             string spiceName = spice.Name;
             foreach (var item in product.SpiceList.Where(x=>x.Name.ToLower()==spice.Name.ToLower()))
             {
-                SetErrorMessage(ValidationMessages.PrzyprawaJużIstenieWPrzepisie);
+                SetErrorMessage(ValidationMessages.PrzyprawaJuzIstenieWPrzepisie);
                 return;
             }
             Spice spicetoAdd = new Spice
@@ -502,7 +558,7 @@ namespace SpiceManager
 
         private void EditSpiceInWarehouse(object obj)
         {
-            EditWarehouseSpiceWindow editWarehouseSpiceWindow = new EditWarehouseSpiceWindow();
+            EditWarehouseSpiceWindow editWarehouseSpiceWindow = new EditWarehouseSpiceWindow();             
             editWarehouseSpiceWindow.DataContext = this;
             editWarehouseSpiceWindow.Owner = mainWindow;
             editWarehouseSpiceWindow.ShowDialog();
@@ -510,17 +566,55 @@ namespace SpiceManager
 
         private void EditSpiceInWarehouseInBase(object obj)
         {
-
+            if (this.SelectedWarehouseSpice == null)
+            {
+                SetErrorMessage(ValidationMessages.NieWybranoElementuDoEdycji);
+                SelectedWarehouseSpiceEditWindow = null;
+                return;
+            }
+            Spice spice = SelectedWarehouseSpice as Spice;
+            EditWarehouseSpiceWindow currentWindow = App.Current.Windows.OfType<EditWarehouseSpiceWindow>().SingleOrDefault(x => x.IsActive);
+            double n;
+            if (!double.TryParse(currentWindow.SpiceWarehouseAmount.Text.ToString(), out n))
+            {
+                SetErrorMessage(ValidationMessages.ZleParametry);
+                SelectedWarehouseSpiceEditWindow = null;
+                return;
+            }
+            string part = currentWindow.SpiceWarehousePart.Text.ToString();
+            if (spice.Part!=part && Warehouse.Any(x => x.Part.ToLower() == part))
+            {
+                SetErrorMessage(ValidationMessages.NazwaPartiiNieJestUnikalna);
+                SelectedWarehouseSpiceEditWindow = null;
+                return;
+            }
+            string name = currentWindow.SpiceWarehouseName.Text.ToString();
+            if (string.IsNullOrEmpty(name))
+            {
+                SetErrorMessage(ValidationMessages.NiePodanoNazwy);
+                SelectedWarehouseSpiceEditWindow = null;
+                return;
+            }
+            foreach (Spice item in Warehouse.Where(x => x.Name.ToLower() == spice.Name.ToLower()))
+            {
+                item.Name = name;
+                item.Part = part;
+                item.Amount = n;
+            }
             SetConfirmMessages(OtherMessages.PomyslnieEdytowanoElement);
+            SelectedWarehouseSpiceEditWindow = null;
+            currentWindow.Close();
         }
 
         private void RemoveSpiceFromWarehouse(object obj)
         {
-            if (!ValidateParamsAsObject(obj))
+            if (this.SelectedWarehouseSpice == null)
             {
                 SetErrorMessage(ValidationMessages.NieWybranoElementuDoUsuniecia);
+                return;
             }
-            Warehouse.Remove((Spice)obj);
+            Spice spice = SelectedWarehouseSpice as Spice;
+            Warehouse.Remove(spice);
             SetConfirmMessages(OtherMessages.PomyslnieUsunietoElement);
         }
 
@@ -575,6 +669,22 @@ namespace SpiceManager
             }
         }
 
+        private void ClearWarehouse(object obj)
+        {
+            var itemToRemove = Warehouse.Where(x => x.Amount == 0).ToList();
+
+            if (!itemToRemove.Any())
+            {
+                SetErrorMessage(ValidationMessages.BrakElementowDoUsuniecia);
+                return;
+            }
+            foreach (var item in itemToRemove)
+            {
+                Warehouse.Remove(item);
+            }
+            SetConfirmMessages(OtherMessages.PomyslnieWyczyszczonoMagazyn);
+        }
+
         #endregion
 
         #region Other
@@ -609,70 +719,109 @@ namespace SpiceManager
             object misValue = System.Reflection.Missing.Value;
             xlWorkBook = xlApp.Workbooks.Add(misValue);
 
-            if (currentWindow.AllRadio.IsChecked == true)
+            if (currentWindow.HistoryRadio.IsChecked == true)
             {
+                Excel.Sheets worksheets = xlWorkBook.Worksheets;
+                var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
+                Excel.Range range;
+                xlNewSheet.Name = "Historia produkcji";
+                xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                xlNewSheet.Select();
 
-            }
-            else if (currentWindow.HistoryRadio.IsChecked == true)
-            {
+                int spiceListColumn = 2;
+                int productRow=2;
 
+                xlNewSheet.Cells[1, 2] = "Przyprawa";
+                xlNewSheet.Cells[1, 3] = "Ilość";
+                xlNewSheet.Cells[1, 4] = "Partia";
+                xlNewSheet.Cells[1, 2].EntireRow.Font.Bold = true;
+                xlNewSheet.Cells[1, 3].EntireRow.Font.Bold = true;
+                xlNewSheet.Cells[1, 4].EntireRow.Font.Bold = true;
+                for (int i = 0; i < History.Count; i++)
+                {
+                    int counter = productRow;
+                    xlNewSheet.Cells[productRow, 1] = History[i].Text;
+                    xlNewSheet.Cells[productRow+1, 1] = History[i].Date;
+                    xlNewSheet.Cells[productRow + 1, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                    for (int j = 0; j < History[i].SpiceList.Count; j++)
+                    {
+                        xlNewSheet.Cells[productRow + j, spiceListColumn] = History[i].SpiceList[j].Name;
+                        xlNewSheet.Cells[productRow + j, spiceListColumn+1] = History[i].SpiceList[j].Amount;
+                        xlNewSheet.Cells[productRow + j, spiceListColumn+2] = History[i].SpiceList[j].Part;
+                    }
+                    counter += History[i].SpiceList.Count-1;
+                    Excel.Range borderRange;
+                    borderRange = xlNewSheet.get_Range("B" + productRow, "D" + counter);
+                    borderRange.Borders.Color = System.Drawing.Color.Black.ToArgb();
+                    productRow += History[i].SpiceList.Count+1;
+                }
+                range = xlNewSheet.get_Range("A1", "D" + productRow);
+                range.Columns.AutoFit();
+                Marshal.ReleaseComObject(xlNewSheet);
             }
             else if(currentWindow.HistroyFromRadio.IsChecked == true)
             {
-                var selectedDate = currentWindow.fromDate.DisplayDate;
+                var fromDate = currentWindow.fromDate.SelectedDate.Value;
+                var toDate = currentWindow.toDate.SelectedDate.Value;
+                Excel.Sheets worksheets = xlWorkBook.Worksheets;
+                var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
+                Excel.Range range;
+                xlNewSheet.Name = "Historia produkcji";
+                xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                xlNewSheet.Select();
+
+                int spiceListColumn = 2;
+                int productRow = 2;
+                xlNewSheet.Cells[1, 1] = "Od " +fromDate.Date.ToShortDateString() + " do " +toDate.Date.ToShortDateString();
+                xlNewSheet.Cells[1, 2] = "Przyprawa";
+                xlNewSheet.Cells[1, 3] = "Ilość";
+                xlNewSheet.Cells[1, 4] = "Partia";
+                xlNewSheet.Cells[1, 2].EntireRow.Font.Bold = true;
+                xlNewSheet.Cells[1, 3].EntireRow.Font.Bold = true;
+                xlNewSheet.Cells[1, 4].EntireRow.Font.Bold = true;
+                ObservableCollection<HistoryRecord> newHistoryList = new ObservableCollection<HistoryRecord>();
+                foreach (var item in History.Where(x => x.Date >= fromDate && x.Date <= toDate))
+                {
+                    newHistoryList.Add(item);
+                }
+                if (!newHistoryList.Any())
+                {
+                    SetErrorMessage(string.Format(ValidationMessages.NieMaCzegoEksportowac,fromDate.Date,toDate.Date));
+                    return;
+                }
+                for (int i = 0; i < newHistoryList.Count; i++)
+                {
+                    int counter = productRow;
+                    xlNewSheet.Cells[productRow, 1] = newHistoryList[i].Text;
+                    xlNewSheet.Cells[productRow+1, 1] = newHistoryList[i].Date;
+                    xlNewSheet.Cells[productRow + 1, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                    for (int j = 0; j < newHistoryList[i].SpiceList.Count; j++)
+                    {
+                        xlNewSheet.Cells[productRow + j, spiceListColumn] = newHistoryList[i].SpiceList[j].Name;
+                        xlNewSheet.Cells[productRow + j, spiceListColumn + 1] = newHistoryList[i].SpiceList[j].Amount;
+                        xlNewSheet.Cells[productRow + j, spiceListColumn + 2] = newHistoryList[i].SpiceList[j].Part;
+                    }
+                    counter += newHistoryList[i].SpiceList.Count - 1;
+                    Excel.Range borderRange;
+                    borderRange = xlNewSheet.get_Range("B" + productRow, "D" + counter);
+                    borderRange.Borders.Color = System.Drawing.Color.Black.ToArgb();
+                    productRow += newHistoryList[i].SpiceList.Count+1;
+                }
+                range = xlNewSheet.get_Range("A1", "D" + productRow);
+                range.Columns.AutoFit();
+                Marshal.ReleaseComObject(xlNewSheet);
             }
             else
             {
-                if (currentWindow.ProductRadio.IsChecked == true)
+                int counter = 1;
+                if (currentWindow.ProductRadio.IsChecked == true) 
                 {
                     Excel.Sheets worksheets = xlWorkBook.Worksheets;
-                    var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
-                    xlNewSheet.Name = "Produkty";
-                    xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                    var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[counter], Type.Missing, Type.Missing, Type.Missing);
+                    xlNewSheet.Name = "Zestawienie";
+                    xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(counter);
                     xlNewSheet.Select();
-
-                    xlNewSheet.Cells[1, 1] = "Data wyeksportowania danych : ";
-                    xlNewSheet.Cells[1, 2] = DateTime.Now.Date;
-                    for (int i = 0; i < Products.Count; i++)
-                    {
-                        xlNewSheet.Cells[i + 2, 1] = Products[i].Id;
-                        xlNewSheet.Cells[i + 2, 2] = Products[i].Name;
-                        for (int j = 0; j < Products[i].SpiceList.Count; j++)
-                        {
-                            xlNewSheet.Cells[i + 2, j + 3] = Products[i].SpiceList[j].Name.ToString();
-                            xlNewSheet.Cells[i + 2, j + 4] = Products[i].SpiceList[j].Amount.ToString();
-                        }
-                    }
-                    Marshal.ReleaseComObject(xlNewSheet);
-                }
-                if (currentWindow.SpiceRadio.IsChecked == true)
-                {
-
-                    Excel.Sheets worksheets = xlWorkBook.Worksheets;
-                    var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
-                    xlNewSheet.Name = "Przyprawy";
-                    xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                    xlNewSheet.Select();
-
-                    xlNewSheet.Cells[1, 1] = "Data wyeksportowania danych : ";
-                    xlNewSheet.Cells[1, 2] = DateTime.Now.Date;
-                    for (int i = 0; i < Spices.Count; i++)
-                    {
-                        xlNewSheet.Cells[i + 2, 1] = Spices[i].Id;
-                        xlNewSheet.Cells[i + 2, 2] = Spices[i].Name;
-                    }
-                    Marshal.ReleaseComObject(xlNewSheet);
-                }
-                if (currentWindow.WarehouseRadio.IsChecked == true)
-                {
-                    Excel.Sheets worksheets = xlWorkBook.Worksheets;
-                    var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
-                    xlNewSheet.Name = "Przyprawy Produkty";
-                    xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                    xlNewSheet.Select();
-
-                    //xlNewSheet.Cells[1, 1] = "Data wyeksportowania danych : ";
-                    //xlNewSheet.Cells[1, 2] = DateTime.Now.Date;
+                    Excel.Range range;
                     for (int i = 1; i <= Products.Count; i++)
                     {
                         xlNewSheet.Cells[1, i+1] = Products[i - 1].Name;
@@ -685,13 +834,43 @@ namespace SpiceManager
                     {
                         for (int j = 0; j < Spices.Count; j++)
                         {
-                            if (Products[i].SpiceList.Any(x=>x.Name.ToLower()==Spices[j].Name.ToLower()))
+                            if (Products[i].SpiceList.Any(x => x.Name.ToLower() == Spices[j].Name.ToLower()))
                             {
-                                xlNewSheet.Cells[j + 2, i + 2] = Products[i].SpiceList[j].Amount;
+                                var currentAmount = Products[i].SpiceList.FirstOrDefault(x => x.Name.ToLower() == Spices[j].Name.ToLower());
+                                xlNewSheet.Cells[j + 2, i + 2] = currentAmount != null ? currentAmount.Amount.ToString() : "";
                             }
                         }
                     }
-
+                    range = xlNewSheet.get_Range("A1", "D" + Spices.Count);
+                    range.Columns.AutoFit();
+                    Marshal.ReleaseComObject(xlNewSheet);
+                    counter++;
+                }
+                if(currentWindow.WarehouseRadio.IsChecked == true)
+                {
+                    Excel.Range range;
+                    Excel.Sheets worksheets = xlWorkBook.Worksheets;
+                    var xlNewSheet = (Excel.Worksheet)worksheets.Add(worksheets[counter], Type.Missing, Type.Missing, Type.Missing);
+                    xlNewSheet.Name = "Stan Magazynu";
+                    xlNewSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(counter);
+                    xlNewSheet.Select();
+                    int startRow = 2;
+                    xlNewSheet.Cells[1, 1] = "Stan magazynu na dzień " + DateTime.Now.ToShortDateString();
+                    xlNewSheet.Cells[1, 2] = "Przyprawa";
+                    xlNewSheet.Cells[1, 3] = "Ilość";
+                    xlNewSheet.Cells[1, 4] = "Partia";
+                    xlNewSheet.Cells[1, 2].EntireRow.Font.Bold = true;
+                    xlNewSheet.Cells[1, 3].EntireRow.Font.Bold = true;
+                    xlNewSheet.Cells[1, 4].EntireRow.Font.Bold = true; ;
+                    for (int i = 0; i < Warehouse.Count; i++)
+                    {
+                        xlNewSheet.Cells[startRow, 2] = Warehouse[i].Name;
+                        xlNewSheet.Cells[startRow, 3] = Warehouse[i].Amount;
+                        xlNewSheet.Cells[startRow, 4] = Warehouse[i].Part;
+                        startRow++;
+                    }
+                    range = xlNewSheet.get_Range("A1", "D" + Warehouse.Count);
+                    range.Columns.AutoFit();
                     Marshal.ReleaseComObject(xlNewSheet);
                 }
             }            
@@ -726,12 +905,13 @@ namespace SpiceManager
             Product currentProduct = (Product)values[0];
             var date = (Nullable<DateTime>)values[1];
             double productionAmout = double.Parse(productionAmountTry);
+            productionAmout /= 100;
             bool isWarehouseEmpty = false;
             string errorMessage = string.Empty;
             foreach (Spice item in currentProduct.SpiceList)
             {
                 double spiceAmount = item.Amount * productionAmout;
-                List<Spice> spiceList = Warehouse.Where(x => x.Name.ToLower() == item.Name.ToLower() && item.Amount > 0).ToList();
+                List<Spice> spiceList = Warehouse.Where(x => x.Name.ToLower() == item.Name.ToLower() && x.Amount > 0).ToList();
                 double summaryAmount = 0;
                 foreach (Spice s in spiceList)
                 {
@@ -746,14 +926,14 @@ namespace SpiceManager
             if (!isWarehouseEmpty)
             {
                 HistoryRecord historyRecord = new HistoryRecord();
-                historyRecord.Text = string.Format(OtherMessages.WyprodukowanoKG, productionAmout, currentProduct.Name);
+                historyRecord.Text = string.Format(OtherMessages.WyprodukowanoKG, productionAmout*100, currentProduct.Name);
                 historyRecord.Id = Helper.FindMaxValue(History, x => x.Id)+1;
                 historyRecord.Date = date;
                 SetConfirmMessages(OtherMessages.ProdukcjaZakonczonaSuksesem);
                 foreach (Spice item in currentProduct.SpiceList)
                 {
                     double itemAmount = item.Amount * productionAmout;
-                    List<Spice> spiceList = Warehouse.Where(x => x.Name.ToLower() == item.Name.ToLower() && item.Amount > 0).ToList();
+                    List<Spice> spiceList = Warehouse.Where(x => x.Name.ToLower() == item.Name.ToLower() && x.Amount > 0).ToList();
                     if (spiceList!=null)
                     {
                         for (int i = 0; i < spiceList.Count; i++)
@@ -796,6 +976,7 @@ namespace SpiceManager
             {
                 SetErrorMessage(errorMessage);
             }
+            productionWindow.Close();
         }
 
         private void OpenProductionWindow(object obj)
@@ -879,9 +1060,22 @@ namespace SpiceManager
             currentWindow.Close();
         }
 
-        private void ShowInfo(object obj)
+        private void RemoveFromHistory(object obj)
         {
+            RemoveHistoryWindow removeHistoryWindow = App.Current.Windows.OfType<RemoveHistoryWindow>().SingleOrDefault(x => x.IsActive);
 
+            var itemToRemove = History.Where(x => x.Date < removeHistoryWindow.dpCalendar1.SelectedDate).ToList();
+
+            if (!itemToRemove.Any())
+            {
+                SetErrorMessage(ValidationMessages.BrakElementowDoUsuniecia);
+                return;
+            }
+            foreach (var item in itemToRemove)
+            {
+                History.Remove(item);
+            }
+            SetConfirmMessages(string.Format(OtherMessages.PomyslnieWyczyszczonoHistorie,itemToRemove.Count,removeHistoryWindow.dpCalendar1.SelectedDate.Value.ToShortDateString()));
         }
 
         private void ClearValidationField(object obj)
@@ -958,6 +1152,14 @@ namespace SpiceManager
             {
                 mainWindow.ErrorTexBlock.Text = message;
             }
+        }
+
+        private void ClearHistory(object obj)
+        {
+            RemoveHistoryWindow removeHistoryWindow = new RemoveHistoryWindow();
+            removeHistoryWindow.DataContext = this;
+            removeHistoryWindow.Owner = mainWindow;
+            removeHistoryWindow.ShowDialog();
         }
 
         #endregion

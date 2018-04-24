@@ -15,5 +15,7 @@ namespace SpiceManager.Messages
         public const string PomyslnieDodanoElement = "Pomyślnie dodano element.";
         public const string PomyslnieEdytowanoElement = "Pomyślnie edytowano element.";
         public const string PomyslnieUsunietoElement = "Pomyślnie usunięto element.";
+        public const string PomyslnieWyczyszczonoMagazyn = "Pomyślnie wyczyszczono magazyn.";
+        public const string PomyslnieWyczyszczonoHistorie = "Pomyślnie usiuniete produkcje starsze niż {1}. Usunieto {0} elementów.";
     }
 }

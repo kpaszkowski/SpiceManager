@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace SpiceManager
 {
@@ -87,5 +88,10 @@ namespace SpiceManager
             if (PropertyChanged != null) { PropertyChanged(this, new PropertyChangedEventArgs(prop)); }
         }
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public static explicit operator Spice(Type v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

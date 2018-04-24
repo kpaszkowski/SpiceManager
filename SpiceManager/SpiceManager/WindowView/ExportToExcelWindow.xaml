@@ -8,7 +8,7 @@
         xmlns:other="clr-namespace:SpiceManager.Other"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Title="Wyeksportuj dane do excela" Height="401" Width="258">
+        Title="Wyeksportuj dane do excela" Height="429" Width="259">
     <Window.Resources>
         <other:Converter x:Key="Converter"></other:Converter>
     </Window.Resources>
@@ -18,15 +18,15 @@
                 <StackPanel>
                     <GroupBox Padding="5" Margin="5">
                         <StackPanel x:Name="singleRadio">
-                            <RadioButton IsChecked="True" Margin="5" x:Name="AllRadio" Content="Wszystko"></RadioButton>
-                            <RadioButton Margin="5" x:Name="HistoryRadio" Content="Historia"></RadioButton>
+                            <RadioButton IsChecked="True" Margin="5" x:Name="HistoryRadio" Content="Historia"></RadioButton>
                             <RadioButton Margin="5" Checked="HistroyFromRadio_Checked" Unchecked="HistroyFromRadio_Unchecked" x:Name="HistroyFromRadio" Content="Historia od daty:"></RadioButton>
                             <DatePicker Margin="5" IsEnabled="False" x:Name="fromDate" SelectedDateFormat="Long" SelectedDate="{Binding DateFrom}"></DatePicker>
+                            <Label Margin="5" IsEnabled="False" x:Name="toDateLabel" Content="Do daty"></Label>
+                            <DatePicker Margin="5" IsEnabled="False" x:Name="toDate" SelectedDateFormat="Long" SelectedDate="{Binding DateTo}"></DatePicker>
                             <RadioButton Margin="5" Checked="OtherRadio_Checked" Unchecked="OtherRadio_Unchecked" x:Name="OtherRadio" Content="Inne"></RadioButton>
                             <GroupBox Padding="5" Margin="5">
                                 <StackPanel x:Name="multiCheck" IsEnabled="False">
-                                    <CheckBox Margin="5" x:Name="ProductRadio" Content="Produkty"></CheckBox>
-                                    <CheckBox Margin="5" x:Name="SpiceRadio" Content="Przyprawy"></CheckBox>
+                                    <CheckBox Margin="5" x:Name="ProductRadio" Content="Produkty/Przyprawy"></CheckBox>
                                     <CheckBox Margin="5" x:Name="WarehouseRadio" Content="Stan magazynu"></CheckBox>
                                 </StackPanel>
                             </GroupBox>
@@ -36,7 +36,7 @@
                     <TextBox x:Name="fileName"></TextBox>
                 </StackPanel>
             </GroupBox>
-            
+
             <!--Buttons-->
             <GroupBox>
                 <Grid>

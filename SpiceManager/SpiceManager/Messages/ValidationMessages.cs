@@ -20,6 +20,8 @@ namespace SpiceManager.Messages
         public const string NieMoznaUsunacPrzyprawyZnajdujeSieWMagazynie = "Nie można usunąć przyprawy.\n\tNajpierw usuń ją z magazynu.";
         public const string NieWybranoPrzyprawy = "Nie wybrano przyprawy.";
         public const string NieWybranoProduktu = "Nie wybrano produktu.";
-        public const string PrzyprawaJużIstenieWPrzepisie = "Przyprawa już istenie w przepisie.\nWybierz inną.";
+        public const string PrzyprawaJuzIstenieWPrzepisie = "Przyprawa już istenie w przepisie.\nWybierz inną.";
+        public const string NieMaCzegoEksportowac = "Nie ma produkcji od {0} do {1}. Wybierz odpowiedni przedział.";
+        public const string BrakElementowDoUsuniecia = "Brak elementów do usunięcia.";
     }
 }

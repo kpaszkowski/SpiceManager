@@ -27,11 +27,13 @@ namespace SpiceManager.WindowView
         private void HistroyFromRadio_Checked(object sender, RoutedEventArgs e)
         {
             fromDate.IsEnabled = true;
+            toDate.IsEnabled = true;
         }
 
         private void HistroyFromRadio_Unchecked(object sender, RoutedEventArgs e)
         {
             fromDate.IsEnabled = false;
+            toDate.IsEnabled = false;
         }
 
         private void OtherRadio_Unchecked(object sender, RoutedEventArgs e)
@@ -39,7 +41,6 @@ namespace SpiceManager.WindowView
             multiCheck.IsEnabled = false;
             WarehouseRadio.IsChecked = false;
             ProductRadio.IsChecked = false;
-            SpiceRadio.IsChecked = false;
         }
 
         private void OtherRadio_Checked(object sender, RoutedEventArgs e)

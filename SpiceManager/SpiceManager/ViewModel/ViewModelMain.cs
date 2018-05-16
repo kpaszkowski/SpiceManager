@@ -56,6 +56,7 @@ namespace SpiceManager
         public RelayCommand StartProductionCommand { get; set; }
         public RelayCommand OpenWindowProductionCommand { get; set; }
         public RelayCommand ExportToExcelCommand { get; set; }
+        public RelayCommand PrintCommand { get; set; }
         public RelayCommand ExportToExcelEndCommand { get; set; }
         public RelayCommand SaveCommand { get; set; }
         public RelayCommand CloseWindowCommand { get; set; }
@@ -275,6 +276,7 @@ namespace SpiceManager
             StartProductionCommand = new RelayCommand(StartProduction);
             OpenWindowProductionCommand = new RelayCommand(OpenProductionWindow);
             ExportToExcelCommand = new RelayCommand(ExportToExcel);
+            PrintCommand = new RelayCommand(PrintDocument);
             ExportToExcelEndCommand = new RelayCommand(ExportToExcelEnd);
             SaveCommand = new RelayCommand(Save);
             CloseWindowCommand = new RelayCommand(CloseWindow);
@@ -688,6 +690,11 @@ namespace SpiceManager
         #endregion
 
         #region Other
+
+        private void PrintDocument(object obj)
+        {
+            throw new NotImplementedException();
+        }
 
         private void ExportToExcel(object obj)
         {

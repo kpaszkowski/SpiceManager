@@ -34,14 +34,18 @@
                     </Button>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="50*"/>
-                            <ColumnDefinition Width="50*"/>
+                            <ColumnDefinition Width="33*"/>
+                            <ColumnDefinition Width="33*"/>
+                            <ColumnDefinition Width="33*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Margin="10" Background="White" BorderThickness="0" Command="{Binding SaveCommand}">
                             <iconPacks:PackIconEntypo Kind="Save"/>
                         </Button>
                         <Button Grid.Column="1" Margin="10" Background="White" BorderThickness="0" Command="{Binding ExportToExcelCommand}">
                             <iconPacks:PackIconSimpleIcons Kind="MicrosoftExcel"/>
+                        </Button>
+                        <Button Grid.Column="2" Margin="10" Background="White" BorderThickness="0" Command="{Binding PrintCommand}">
+                            <iconPacks:PackIconSimpleIcons Kind="Pinterest"/>
                         </Button>
                     </Grid>
                     <Border BorderBrush="Black" BorderThickness="2" CornerRadius="8,8,8,8">

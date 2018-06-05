@@ -750,7 +750,6 @@ namespace SpiceManager
         {
             var _itemSourceList = new CollectionViewSource() { Source = Spices };
 
-            string dupa;
             _itemSourceList.Filter += new FilterEventHandler(yourFilter);
 
             ICollectionView Itemlist = _itemSourceList.View;

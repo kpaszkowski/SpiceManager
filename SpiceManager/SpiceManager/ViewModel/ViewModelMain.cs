@@ -8,12 +8,14 @@ using SpiceManager.WindowView.WarehouseWindow;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -59,6 +61,9 @@ namespace SpiceManager
         public RelayCommand OpenWindowProductionCommand { get; set; }
         public RelayCommand ExportToExcelCommand { get; set; }
         public RelayCommand PrintCommand { get; set; }
+        public RelayCommand FilterSpicesCommand { get; set; }
+        public RelayCommand FilterProductsCommand { get; set; }
+        public RelayCommand FilterWarehouseCommand { get; set; }
         public RelayCommand ExportToExcelEndCommand { get; set; }
         public RelayCommand SaveCommand { get; set; }
         public RelayCommand CloseWindowCommand { get; set; }
@@ -244,13 +249,53 @@ namespace SpiceManager
             InitializeElements();
         }
 
+        private void yourFilter(object sender, FilterEventArgs e)
+        {
+            string filterText = string.Empty;
+            if (e.Item is Spice)
+            {
+                var obj = e.Item as Spice;
+                if (obj.Part !=null)
+                {
+                    filterText = mainWindow.FilterWarehouseBox.Text.ToString();
+                }
+                else
+                {
+                    filterText = mainWindow.FilterSpiceBox.Text.ToString();
+                }
+                if (obj != null)
+                {
+                    if (obj.Name.ToLower().Contains(filterText.ToLower()))
+                        e.Accepted = true;
+                    else
+                        e.Accepted = false;
+                }
+            }
+            else if (e.Item is Product)
+            {
+                filterText = mainWindow.FilterProductBox.Text.ToString();
+                var obj = e.Item as Product;
+                if (obj != null)
+                {
+                    if (obj.Name.ToLower().Contains(filterText.ToLower()))
+                        e.Accepted = true;
+                    else
+                        e.Accepted = false;
+                }
+            }
+            //else
+            //{
+            //    filterText = mainWindow.FilterSpiceBox.Text.ToString();
+            //    var obj = e.Item as Spice;
+            //}
+        }
+
         private void InitializeElements()
         {
             Spices = new ObservableCollection<Spice>();
             Products = new ObservableCollection<Product>();
             History = new ObservableCollection<HistoryRecord>();
             Warehouse = new ObservableCollection<Spice>();
-
 
             AddNewProductCommand = new RelayCommand(AddNewProduct);
 
@@ -279,6 +324,10 @@ namespace SpiceManager
             OpenWindowProductionCommand = new RelayCommand(OpenProductionWindow);
             ExportToExcelCommand = new RelayCommand(ExportToExcel);
             PrintCommand = new RelayCommand(PrintDocument);
+            FilterSpicesCommand = new RelayCommand(FilterSpice);
+            FilterProductsCommand = new RelayCommand(FilterProducts);
+            FilterWarehouseCommand = new RelayCommand(FilterWarehouse);
+
             ExportToExcelEndCommand = new RelayCommand(ExportToExcelEnd);
             SaveCommand = new RelayCommand(Save);
             CloseWindowCommand = new RelayCommand(CloseWindow);
@@ -287,6 +336,7 @@ namespace SpiceManager
             ClearWarehouseCommand = new RelayCommand(ClearWarehouse);
             ClearHistoryCommand = new RelayCommand(ClearHistory);
             Load();
+
         }
 
         #region Methods
@@ -754,6 +804,38 @@ namespace SpiceManager
             myFlowDocumentReader.Document = doc;
 
             return doc;
+        }
+
+        private void FilterSpice(object obj)
+        {
+            var _itemSourceList = new CollectionViewSource() { Source = Spices };
+
+            _itemSourceList.Filter += new FilterEventHandler(yourFilter);
+
+            ICollectionView Itemlist = _itemSourceList.View;
+
+            mainWindow.SpiceGrid.ItemsSource = Itemlist;
+        }
+
+        private void FilterProducts(object obj)
+        {
+            var _itemSourceList = new CollectionViewSource() { Source = Products };
+
+            _itemSourceList.Filter += new FilterEventHandler(yourFilter);
+
+            ICollectionView Itemlist = _itemSourceList.View;
+
+            mainWindow.ProductGrid.ItemsSource = Itemlist;
+        }
+        private void FilterWarehouse(object obj)
+        {
+            var _itemSourceList = new CollectionViewSource() { Source = Warehouse };
+
+            _itemSourceList.Filter += new FilterEventHandler(yourFilter);
+
+            ICollectionView Itemlist = _itemSourceList.View;
+
+            mainWindow.WarehouseGrid.ItemsSource = Itemlist;
         }
 
         private void ExportToExcel(object obj)

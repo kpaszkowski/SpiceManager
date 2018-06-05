@@ -17,5 +17,7 @@ namespace SpiceManager.Messages
         public const string PomyslnieUsunietoElement = "Pomyślnie usunięto element.";
         public const string PomyslnieWyczyszczonoMagazyn = "Pomyślnie wyczyszczono magazyn.";
         public const string PomyslnieWyczyszczonoHistorie = "Pomyślnie usiuniete produkcje starsze niż {1}. Usunieto {0} elementów.";
+        public const string DrukowanieRozpoczete = "Rozpoczęto drukowanie historii produkcji.";
+        public const string DrukowanieZakonczoneSuksesem = "Wydrukowano historię produkcji.";
     }
 }

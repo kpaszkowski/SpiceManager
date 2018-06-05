@@ -14,6 +14,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -693,7 +695,65 @@ namespace SpiceManager
 
         private void PrintDocument(object obj)
         {
-            throw new NotImplementedException();
+            SetConfirmMessages(OtherMessages.DrukowanieRozpoczete);
+            PrintDialog printDlg = new PrintDialog();
+            FlowDocument doc = CreateFlowDocument();
+            doc.PageHeight = printDlg.PrintableAreaHeight;
+            doc.PageWidth = printDlg.PrintableAreaWidth;
+            doc.Name = "FlowDoc";
+            IDocumentPaginatorSource idpSource = doc;
+            printDlg.PrintDocument(idpSource.DocumentPaginator, "Historia produkcji");
+            SetConfirmMessages(OtherMessages.DrukowanieZakonczoneSuksesem);
+        }
+
+        private FlowDocument CreateFlowDocument()
+        {
+            FlowDocument doc = new FlowDocument();
+            Section sec = new Section();
+
+            Table mainTable = new Table();
+            int numberOfColumns = 3;
+            
+            for (int x = 0; x < numberOfColumns; x++)
+            {
+                mainTable.Columns.Add(new TableColumn());
+            }
+            TableRow currentRow; 
+            int rowCounter = 0;
+
+            for (int i = 0; i < History.Count; i++)
+            {
+                mainTable.RowGroups.Add(new TableRowGroup());
+                mainTable.RowGroups[0].Rows.Add(new TableRow());
+                currentRow = mainTable.RowGroups[0].Rows[rowCounter];
+                rowCounter++;
+                currentRow.Cells.Add(new TableCell(new Paragraph(new Run(History[i].Text))));
+                currentRow.Cells[0].ColumnSpan = 2;
+                currentRow.Cells.Add(new TableCell(new Paragraph(new Run(History[i].Date?.ToString("MM/dd/yyyy")))));
+                currentRow.Cells[1].TextAlignment = TextAlignment.Right;
+                currentRow.Cells.Add(new TableCell(new Paragraph(new Run(" "))));
+                currentRow.FontWeight = FontWeights.Bold;
+                currentRow.Background = Brushes.Silver;
+                currentRow.FontSize = 8;
+
+                for (int j = 0; j < History[i].SpiceList.Count; j++)
+                {
+                    mainTable.RowGroups[0].Rows.Add(new TableRow());
+                    currentRow = mainTable.RowGroups[0].Rows[rowCounter];
+                    rowCounter++;
+                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run(History[i].SpiceList[j].Name))));
+                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run(History[i].SpiceList[j].Amount.ToString("0.00")+" kg"))));
+                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run("partia " + History[i].SpiceList[j].Part))));
+                    currentRow.FontSize = 8;
+                }
+            }
+
+            doc.Blocks.Add(mainTable);
+
+            FlowDocumentReader myFlowDocumentReader = new FlowDocumentReader();
+            myFlowDocumentReader.Document = doc;
+
+            return doc;
         }
 
         private void ExportToExcel(object obj)
